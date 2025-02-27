@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select and Place Images</title>
+  <style>
+    body {
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    #grid-container {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      margin-left: 150px;
+    }
+    .grid-cell {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+    }
+    #image-container {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    table {
+      border-collapse: collapse;
+    }
+    td {
+      width: 100px;
+      height: 100px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .selectable {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .selected {
+      border: 2px solid red;
+    }
+    #reset-button {
+      position: absolute;
+      bottom: 20px;
+      padding: 10px 20px;
+      background-color: #ff6347;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #reset-button:hover {
+      background-color: #ff4500;
+    }
+  </style>
+</head>
+<body>
+  <div id="image-container">
+    <table>
+      <tr><td><img id="img1" class="selectable" src="img1.png" /></td></tr>
+      <tr><td><img id="img2" class="selectable" src="img2.png" /></td></tr>
+      <tr><td><img id="img3" class="selectable" src="img3.png" /></td></tr>
+    </table>
+  </div>
+  <div id="grid-container">
+    <div class="grid-cell" data-pos="0"></div>
+    <div class="grid-cell" data-pos="1"></div>
+    <div class="grid-cell" data-pos="2"></div>
+    <div class="grid-cell" data-pos="3"></div>
+    <div class="grid-cell" data-pos="4"></div>
+    <div class="grid-cell" data-pos="5"></div>
+    <div class="grid-cell" data-pos="6"></div>
+    <div class="grid-cell" data-pos="7"></div>
+    <div class="grid-cell" data-pos="8"></div>
+  </div>
+  <button id="reset-button">Reset Positions</button>
+
+  <script>
+    let selectedImage = null;
+    const images = document.querySelectorAll('.selectable');
+    const cells = document.querySelectorAll('.grid-cell');
+    const resetButton = document.getElementById('reset-button');
+    const imageContainer = document.querySelector('table');
+
+    const originalPositions = {};
+    images.forEach(img => {
+      originalPositions[img.id] = img.parentElement;
+    });
+
+    images.forEach(img => {
+      img.addEventListener('click', () => {
+        images.forEach(i => i.classList.remove('selected'));
+        img.classList.add('selected');
+        selectedImage = img;
+      });
+      
+      img.addEventListener('dblclick', () => {
+        originalPositions[img.id].appendChild(img);
+        img.classList.remove('selected');
+        selectedImage = null;
+      });
+    });
+
+    cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        if (selectedImage) {
+          if (cell.firstChild) {
+            let temp = cell.firstChild;
+            cell.innerHTML = '';
+            cell.appendChild(selectedImage);
+            temp.classList.remove('selected');
+            selectedImage.classList.remove('selected');
+            selectedImage = temp;
+          } else {
+            cell.innerHTML = '';
+            cell.appendChild(selectedImage);
+            selectedImage.classList.remove('selected');
+            selectedImage = null;
+          }
+        } else if (cell.firstChild) {
+          selectedImage = cell.firstChild;
+          selectedImage.classList.add('selected');
+        }
+      });
+    });
+
+    resetButton.addEventListener('click', () => {
+      cells.forEach(cell => cell.innerHTML = '');
+      Object.values(originalPositions).forEach(parent => {
+        images.forEach(img => {
+          if (!img.parentElement || img.parentElement.classList.contains('grid-cell')) {
+            parent.appendChild(img);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
