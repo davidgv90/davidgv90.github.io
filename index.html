@@ -17,15 +17,26 @@
       align-items: center;
       overflow: hidden;
       position: relative;
+      flex-direction: column;
     }
-    #grid-container {
+    .grid-container {
       display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
       gap: 10px;
       background-color: rgba(255, 255, 255, 0.8);
       padding: 10px;
-      margin-left: 150px;
+      margin: 10px;
+    }
+    .grid-large {
+      grid-template-columns: repeat(7, 100px);
+      grid-template-rows: repeat(2, 100px);
+    }
+    .grid-medium {
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(2, 100px);
+    }
+    .grid-small {
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(1, 100px);
     }
     .grid-cell {
       width: 100px;
@@ -36,125 +47,109 @@
       align-items: center;
       background-color: white;
     }
-    #image-container {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    table {
-      border-collapse: collapse;
-    }
-    td {
-      width: 100px;
-      height: 100px;
-      text-align: center;
-      vertical-align: middle;
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(19, 100px);
+      grid-template-rows: repeat(2, 100px);
+      gap: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      margin: 10px;
     }
     .selectable {
-      width: 100px;
-      height: 100px;
+      width: 50px;
+      height: 50px;
       cursor: pointer;
       border: 2px solid transparent;
     }
     .selected {
       border: 2px solid red;
     }
-    #reset-button {
-      position: absolute;
-      bottom: 20px;
-      padding: 10px 20px;
-      background-color: #ff6347;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .grid-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    #reset-button:hover {
-      background-color: #ff4500;
+    .bottom-grids {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .grid-cell img {
+      width: 100px;
+      height: 100px;
     }
   </style>
 </head>
 <body>
-  <div id="image-container">
-    <table>
-      <tr><td><img id="img1" class="selectable" src="img1.png" /></td></tr>
-      <tr><td><img id="img2" class="selectable" src="img2.png" /></td></tr>
-      <tr><td><img id="img3" class="selectable" src="img3.png" /></td></tr>
-    </table>
+  <div class="grid-wrapper">
+    <div class="image-grid" id="image-container"></div>
+    <div class="grid-container grid-large" id="grid1"></div>
+    <div class="grid-container grid-large" id="grid2"></div>
+    <div class="grid-container grid-large" id="grid3"></div>
+    <div class="bottom-grids">
+      <div class="grid-container grid-medium" id="grid4"></div>
+      <div class="grid-container grid-small" id="grid5"></div>
+    </div>
   </div>
-  <div id="grid-container">
-    <div class="grid-cell" data-pos="0"></div>
-    <div class="grid-cell" data-pos="1"></div>
-    <div class="grid-cell" data-pos="2"></div>
-    <div class="grid-cell" data-pos="3"></div>
-    <div class="grid-cell" data-pos="4"></div>
-    <div class="grid-cell" data-pos="5"></div>
-    <div class="grid-cell" data-pos="6"></div>
-    <div class="grid-cell" data-pos="7"></div>
-    <div class="grid-cell" data-pos="8"></div>
-  </div>
-  <button id="reset-button">Reset Positions</button>
 
   <script>
     let selectedImage = null;
-    const images = document.querySelectorAll('.selectable');
-    const cells = document.querySelectorAll('.grid-cell');
-    const resetButton = document.getElementById('reset-button');
-    const imageContainer = document.querySelector('table');
-
     const originalPositions = {};
-    images.forEach(img => {
-      originalPositions[img.id] = img.parentElement;
-    });
 
-    images.forEach(img => {
-      img.addEventListener('click', () => {
-        images.forEach(i => i.classList.remove('selected'));
-        img.classList.add('selected');
-        selectedImage = img;
-      });
-      
-      img.addEventListener('dblclick', () => {
-        originalPositions[img.id].appendChild(img);
-        img.classList.remove('selected');
-        selectedImage = null;
-      });
-    });
-
-    cells.forEach(cell => {
-      cell.addEventListener('click', () => {
-        if (selectedImage) {
-          if (cell.firstChild) {
-            let temp = cell.firstChild;
-            cell.innerHTML = '';
-            cell.appendChild(selectedImage);
-            temp.classList.remove('selected');
-            selectedImage.classList.remove('selected');
-            selectedImage = temp;
-          } else {
-            cell.innerHTML = '';
+    function createGrid(gridId, cells) {
+      const grid = document.getElementById(gridId);
+      for (let i = 0; i < cells; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('grid-cell');
+        cell.dataset.pos = i;
+        cell.addEventListener('click', () => {
+          if (selectedImage) {
+            if (cell.firstChild) {
+              let temp = cell.firstChild;
+              selectedImage.parentElement.appendChild(temp);
+            }
             cell.appendChild(selectedImage);
             selectedImage.classList.remove('selected');
+            selectedImage.style.width = "100px";
+            selectedImage.style.height = "100px";
             selectedImage = null;
           }
-        } else if (cell.firstChild) {
-          selectedImage = cell.firstChild;
-          selectedImage.classList.add('selected');
-        }
-      });
-    });
-
-    resetButton.addEventListener('click', () => {
-      cells.forEach(cell => cell.innerHTML = '');
-      Object.values(originalPositions).forEach(parent => {
-        images.forEach(img => {
-          if (!img.parentElement || img.parentElement.classList.contains('grid-cell')) {
-            parent.appendChild(img);
-          }
         });
+        grid.appendChild(cell);
+      }
+    }
+
+    createGrid('grid1', 14);
+    createGrid('grid2', 14);
+    createGrid('grid3', 14);
+    createGrid('grid4', 6);
+    createGrid('grid5', 3);
+
+    const imageContainer = document.getElementById('image-container');
+    
+    for (let i = 0; i < 38; i++) {
+      const img = document.createElement('img');
+      img.src = `${i + 1}.png`;
+      img.classList.add('selectable');
+      img.id = `img${i + 1}`;
+      originalPositions[img.id] = imageContainer;
+      imageContainer.appendChild(img);
+
+      img.addEventListener('click', () => {
+        if (selectedImage) {
+          selectedImage.classList.remove('selected');
+        }
+        selectedImage = img;
+        selectedImage.classList.add('selected');
       });
-    });
+
+      img.addEventListener('dblclick', () => {
+        originalPositions[img.id].appendChild(img);
+        img.style.width = "50px";
+        img.style.height = "50px";
+      });
+    }
   </script>
 </body>
 </html>
